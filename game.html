@@ -3,43 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Figuras Geométricas</title>
+    <title>Editor + Juego de Fichas</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="modal" class="modal">
+    <div id="modal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <p id="modal-message"></p>
-            <button id="retry-button">Reintentar</button>
+            <button id="retry-button">Seguir editando</button>
         </div>
     </div>
 
-    <!-- Contador de movimientos -->
-    <div id="move-counter">Movimientos realizados</div>
+    <h1>Editor de tablero 6x6</h1>
+    <div id="move-counter">Movimientos: 0</div>
 
-    <!-- Contenedor para el área de juego y la información -->
-    <div id="game-container">
-        <!-- Área de juego -->
-        <div id="game-board">
-            <div id="piece-3" class="draggable horizontal">A</div>
-            <div id="piece-4" class="draggable horizontal">N</div>
-            <div id="piece-5" class="draggable horizontal">J</div>
-            <div id="piece-6" class="draggable vertical">L</div>
-            <div id="piece-7" class="draggable vertical">D</div>
-            <div id="piece-8" class="draggable horizontal">H</div>
-            <div id="piece-9" class="draggable vertical">M</div>
-            <div id="piece-10" class="draggable horizontal">B</div>
-            <div id="piece-11" class="draggable vertical">E</div>
-            <div id="piece-12" class="draggable vertical">O</div>
-            <div id="piece-13" class="draggable horizontal">I</div>
-            <div id="piece-14" class="draggable horizontal">Q</div>
-        </div>
+    <div id="app-layout">
+        <aside id="editor-panel">
+            <h2>Fichas disponibles</h2>
+            <p class="hint">Haz clic para agregar una ficha al tablero.</p>
+            <div id="palette"></div>
 
-        <!-- Información de las fichas -->
-        <div id="piece-info">
-            <h3>Posiciones actuales de las fichas</h3>
-            <div id="positions"></div>
-        </div>
+            <h3>Meta de salida (roja)</h3>
+            <label for="goal-row">Fila de salida:</label>
+            <select id="goal-row"></select>
+
+            <h3>Acciones de ficha seleccionada</h3>
+            <div id="piece-actions">
+                <button id="rotate-piece">Rotar (Horizontal/Vertical)</button>
+                <button id="remove-piece">Quitar ficha</button>
+            </div>
+
+            <button id="reset-board" class="secondary">Vaciar tablero</button>
+        </aside>
+
+        <main>
+            <div id="game-board" aria-label="Tablero de juego 6 por 6"></div>
+            <section id="piece-info">
+                <h3>Posiciones actuales</h3>
+                <div id="positions"></div>
+            </section>
+        </main>
     </div>
 
     <script src="script.js"></script>
