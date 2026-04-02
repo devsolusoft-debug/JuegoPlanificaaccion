@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Figuras Geométricas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <p id="modal-message"></p>
+            <button id="retry-button">Reintentar</button>
+        </div>
+    </div>
+
+    <!-- Contador de movimientos -->
+    <div id="move-counter">Movimientos realizados</div>
+
+    <!-- Contenedor para el área de juego y la información -->
+    <div id="game-container">
+        <!-- Área de juego -->
+        <div id="game-board">
+            <div id="piece-3" class="draggable horizontal">A</div>
+            <div id="piece-4" class="draggable horizontal">N</div>
+            <div id="piece-5" class="draggable horizontal">J</div>
+            <div id="piece-6" class="draggable vertical">L</div>
+            <div id="piece-7" class="draggable vertical">D</div>
+            <div id="piece-8" class="draggable horizontal">H</div>
+            <div id="piece-9" class="draggable vertical">M</div>
+            <div id="piece-10" class="draggable horizontal">B</div>
+            <div id="piece-11" class="draggable vertical">E</div>
+            <div id="piece-12" class="draggable vertical">O</div>
+            <div id="piece-13" class="draggable horizontal">I</div>
+            <div id="piece-14" class="draggable horizontal">Q</div>
+        </div>
+
+        <!-- Información de las fichas -->
+        <div id="piece-info">
+            <h3>Posiciones actuales de las fichas</h3>
+            <div id="positions"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
