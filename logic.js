@@ -213,7 +213,7 @@ function renderBoard() {
         pieceDiv.style.backgroundColor = piece.color;
         pieceDiv.innerHTML = `<span class="piece-letter-circle" style="color: ${piece.color};">${piece.name}</span>`;
 
-        pieceDiv.addEventListener('mousedown', e => {
+        const onPiecePointerDown = e => {
             if (isSettingGoal) return;
             if (isPlaying) {
                 startGameDrag(e, piece);
@@ -221,7 +221,10 @@ function renderBoard() {
             }
             selectPiece(piece.id);
             startEditorDrag(e, piece);
-        });
+        };
+
+        pieceDiv.addEventListener('mousedown', onPiecePointerDown);
+        pieceDiv.addEventListener('touchstart', onPiecePointerDown, { passive: false });
 
         pieceDiv.addEventListener('click', e => {
             e.stopPropagation();
@@ -242,14 +245,18 @@ function startEditorDrag(e, piece) {
     if (isPlaying) return;
     e.preventDefault();
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    const startPoint = getClientPoint(e);
+    const startX = startPoint.x;
+    const startY = startPoint.y;
     const startCol = piece.col;
     const startRow = piece.row;
+    const isTouch = e.type === 'touchstart';
 
     function onMouseMove(moveEvent) {
-        const deltaX = moveEvent.clientX - startX;
-        const deltaY = moveEvent.clientY - startY;
+        if (isTouch) moveEvent.preventDefault();
+        const movePoint = getClientPoint(moveEvent);
+        const deltaX = movePoint.x - startX;
+        const deltaY = movePoint.y - startY;
 
         let col = Math.round((startCol * GRID_SIZE + deltaX) / GRID_SIZE);
         let row = Math.round((startRow * GRID_SIZE + deltaY) / GRID_SIZE);
@@ -265,31 +272,45 @@ function startEditorDrag(e, piece) {
     }
 
     function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+        if (isTouch) {
+            document.removeEventListener('touchmove', onMouseMove);
+            document.removeEventListener('touchend', onMouseUp);
+        } else {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
     }
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    if (isTouch) {
+        document.addEventListener('touchmove', onMouseMove, { passive: false });
+        document.addEventListener('touchend', onMouseUp);
+    } else {
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
 }
 
 function startGameDrag(e, piece) {
     if (gameCompleted) return;
     e.preventDefault();
 
-    const rect = e.target.getBoundingClientRect();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const startPoint = getClientPoint(e);
     const initialCol = piece.col;
     const initialRow = piece.row;
     const isHorizontal = piece.width > piece.height;
     const isVertical = piece.height > piece.width;
+    const isTouch = e.type === 'touchstart';
 
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
+    const offsetX = startPoint.x - rect.left;
+    const offsetY = startPoint.y - rect.top;
 
     function onMouseMove(moveEvent) {
+        if (isTouch) moveEvent.preventDefault();
+        const movePoint = getClientPoint(moveEvent);
         const boardRect = gameBoard.getBoundingClientRect();
-        const x = moveEvent.clientX - boardRect.left - offsetX;
-        const y = moveEvent.clientY - boardRect.top - offsetY;
+        const x = movePoint.x - boardRect.left - offsetX;
+        const y = movePoint.y - boardRect.top - offsetY;
 
         let col = Math.round(x / GRID_SIZE);
         let row = Math.round(y / GRID_SIZE);
@@ -308,8 +329,13 @@ function startGameDrag(e, piece) {
     }
 
     function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+        if (isTouch) {
+            document.removeEventListener('touchmove', onMouseMove);
+            document.removeEventListener('touchend', onMouseUp);
+        } else {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
 
         if (piece.col !== initialCol || piece.row !== initialRow) {
             gameMoveCount += 1;
@@ -326,8 +352,13 @@ function startGameDrag(e, piece) {
         renderBoard();
     }
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    if (isTouch) {
+        document.addEventListener('touchmove', onMouseMove, { passive: false });
+        document.addEventListener('touchend', onMouseUp);
+    } else {
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
 }
 
 function toggleGoalMode() {
@@ -528,4 +559,14 @@ function translateSide(side) {
     if (side === 'top') return 'arriba';
     if (side === 'bottom') return 'abajo';
     return side;
+}
+
+function getClientPoint(event) {
+    if (event.touches && event.touches.length > 0) {
+        return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    }
+    if (event.changedTouches && event.changedTouches.length > 0) {
+        return { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
+    }
+    return { x: event.clientX, y: event.clientY };
 }
