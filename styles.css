@@ -254,10 +254,20 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             border: 2px solid rgba(0, 0, 0, 0.1);
             z-index: 10;
-            font-weight: bold;
-            font-size: 20px;
-            color: white;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .piece-letter-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 22px;
+            line-height: 1;
         }
 
         .piece:hover {

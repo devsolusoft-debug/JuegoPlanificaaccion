@@ -211,7 +211,7 @@ function renderBoard() {
         pieceDiv.style.width = `${piece.width * GRID_SIZE}px`;
         pieceDiv.style.height = `${piece.height * GRID_SIZE}px`;
         pieceDiv.style.backgroundColor = piece.color;
-        pieceDiv.textContent = piece.name;
+        pieceDiv.innerHTML = `<span class="piece-letter-circle" style="color: ${piece.color};">${piece.name}</span>`;
 
         pieceDiv.addEventListener('mousedown', e => {
             if (isSettingGoal) return;
