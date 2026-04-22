@@ -502,3 +502,20 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+
+.play-controls {
+    margin-top: 16px;
+}
+
+.play-footer {
+    padding: 12px 0 0;
+    border-top: none;
+}
+
+.container.is-playing .left-sidebar,
+.container.is-playing .right-sidebar,
+.container.is-playing .board-controls {
+    opacity: 0.3;
+    pointer-events: none;
+}
