@@ -219,12 +219,17 @@ function renderBoard() {
                 startGameDrag(e, piece);
                 return;
             }
-            selectPiece(piece.id);
+            selectedPieceId = piece.id;
+            updateUI();
             startEditorDrag(e, piece);
         };
 
-        pieceDiv.addEventListener('mousedown', onPiecePointerDown);
-        pieceDiv.addEventListener('touchstart', onPiecePointerDown, { passive: false });
+        if (window.PointerEvent) {
+            pieceDiv.addEventListener('pointerdown', onPiecePointerDown);
+        } else {
+            pieceDiv.addEventListener('mousedown', onPiecePointerDown);
+            pieceDiv.addEventListener('touchstart', onPiecePointerDown, { passive: false });
+        }
 
         pieceDiv.addEventListener('click', e => {
             e.stopPropagation();
@@ -250,10 +255,11 @@ function startEditorDrag(e, piece) {
     const startY = startPoint.y;
     const startCol = piece.col;
     const startRow = piece.row;
+    const isPointer = e.type === 'pointerdown';
     const isTouch = e.type === 'touchstart';
 
     function onMouseMove(moveEvent) {
-        if (isTouch) moveEvent.preventDefault();
+        if (isTouch || isPointer) moveEvent.preventDefault();
         const movePoint = getClientPoint(moveEvent);
         const deltaX = movePoint.x - startX;
         const deltaY = movePoint.y - startY;
@@ -275,6 +281,11 @@ function startEditorDrag(e, piece) {
         if (isTouch) {
             document.removeEventListener('touchmove', onMouseMove);
             document.removeEventListener('touchend', onMouseUp);
+            document.removeEventListener('touchcancel', onMouseUp);
+        } else if (isPointer) {
+            document.removeEventListener('pointermove', onMouseMove);
+            document.removeEventListener('pointerup', onMouseUp);
+            document.removeEventListener('pointercancel', onMouseUp);
         } else {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
@@ -284,6 +295,11 @@ function startEditorDrag(e, piece) {
     if (isTouch) {
         document.addEventListener('touchmove', onMouseMove, { passive: false });
         document.addEventListener('touchend', onMouseUp);
+        document.addEventListener('touchcancel', onMouseUp);
+    } else if (isPointer) {
+        document.addEventListener('pointermove', onMouseMove);
+        document.addEventListener('pointerup', onMouseUp);
+        document.addEventListener('pointercancel', onMouseUp);
     } else {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
@@ -300,13 +316,14 @@ function startGameDrag(e, piece) {
     const initialRow = piece.row;
     const isHorizontal = piece.width > piece.height;
     const isVertical = piece.height > piece.width;
+    const isPointer = e.type === 'pointerdown';
     const isTouch = e.type === 'touchstart';
 
     const offsetX = startPoint.x - rect.left;
     const offsetY = startPoint.y - rect.top;
 
     function onMouseMove(moveEvent) {
-        if (isTouch) moveEvent.preventDefault();
+        if (isTouch || isPointer) moveEvent.preventDefault();
         const movePoint = getClientPoint(moveEvent);
         const boardRect = gameBoard.getBoundingClientRect();
         const x = movePoint.x - boardRect.left - offsetX;
@@ -332,6 +349,11 @@ function startGameDrag(e, piece) {
         if (isTouch) {
             document.removeEventListener('touchmove', onMouseMove);
             document.removeEventListener('touchend', onMouseUp);
+            document.removeEventListener('touchcancel', onMouseUp);
+        } else if (isPointer) {
+            document.removeEventListener('pointermove', onMouseMove);
+            document.removeEventListener('pointerup', onMouseUp);
+            document.removeEventListener('pointercancel', onMouseUp);
         } else {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
@@ -355,6 +377,11 @@ function startGameDrag(e, piece) {
     if (isTouch) {
         document.addEventListener('touchmove', onMouseMove, { passive: false });
         document.addEventListener('touchend', onMouseUp);
+        document.addEventListener('touchcancel', onMouseUp);
+    } else if (isPointer) {
+        document.addEventListener('pointermove', onMouseMove);
+        document.addEventListener('pointerup', onMouseUp);
+        document.addEventListener('pointercancel', onMouseUp);
     } else {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
@@ -562,6 +589,9 @@ function translateSide(side) {
 }
 
 function getClientPoint(event) {
+    if (event.clientX !== undefined && event.clientY !== undefined) {
+        return { x: event.clientX, y: event.clientY };
+    }
     if (event.touches && event.touches.length > 0) {
         return { x: event.touches[0].clientX, y: event.touches[0].clientY };
     }
