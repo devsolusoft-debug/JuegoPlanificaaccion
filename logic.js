@@ -32,6 +32,8 @@ let isPlaying = false;
 let gamePieces = [];
 let gameMoveCount = 0;
 let gameCompleted = false;
+let dragSessionActive = false;
+let lastTouchStartAt = 0;
 
 const appContainer = document.getElementById('appContainer');
 const gameBoard = document.getElementById('gameBoard');
@@ -214,6 +216,12 @@ function renderBoard() {
         pieceDiv.innerHTML = `<span class="piece-letter-circle" style="color: ${piece.color};">${piece.name}</span>`;
 
         const onPiecePointerDown = e => {
+            if (dragSessionActive) return;
+            if (e.type === 'mousedown' && Date.now() - lastTouchStartAt < 700) return;
+            if (e.type === 'touchstart' || (e.type === 'pointerdown' && e.pointerType === 'touch')) {
+                lastTouchStartAt = Date.now();
+            }
+
             if (isSettingGoal) return;
             if (isPlaying) {
                 startGameDrag(e, piece);
@@ -224,12 +232,9 @@ function renderBoard() {
             startEditorDrag(e, piece);
         };
 
-        if (window.PointerEvent) {
-            pieceDiv.addEventListener('pointerdown', onPiecePointerDown);
-        } else {
-            pieceDiv.addEventListener('mousedown', onPiecePointerDown);
-            pieceDiv.addEventListener('touchstart', onPiecePointerDown, { passive: false });
-        }
+        pieceDiv.addEventListener('pointerdown', onPiecePointerDown);
+        pieceDiv.addEventListener('mousedown', onPiecePointerDown);
+        pieceDiv.addEventListener('touchstart', onPiecePointerDown, { passive: false });
 
         pieceDiv.addEventListener('click', e => {
             e.stopPropagation();
@@ -249,6 +254,7 @@ function selectPiece(id) {
 function startEditorDrag(e, piece) {
     if (isPlaying) return;
     e.preventDefault();
+    dragSessionActive = true;
 
     const startPoint = getClientPoint(e);
     const startX = startPoint.x;
@@ -278,6 +284,7 @@ function startEditorDrag(e, piece) {
     }
 
     function onMouseUp() {
+        dragSessionActive = false;
         if (isTouch) {
             document.removeEventListener('touchmove', onMouseMove);
             document.removeEventListener('touchend', onMouseUp);
@@ -309,6 +316,7 @@ function startEditorDrag(e, piece) {
 function startGameDrag(e, piece) {
     if (gameCompleted) return;
     e.preventDefault();
+    dragSessionActive = true;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const startPoint = getClientPoint(e);
@@ -346,6 +354,7 @@ function startGameDrag(e, piece) {
     }
 
     function onMouseUp() {
+        dragSessionActive = false;
         if (isTouch) {
             document.removeEventListener('touchmove', onMouseMove);
             document.removeEventListener('touchend', onMouseUp);
