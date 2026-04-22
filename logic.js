@@ -278,7 +278,8 @@ function startEditorDrag(e, piece, element) {
         if (canPlaceAt(boardPieces, row, col, piece.width, piece.height, piece.id, false)) {
             piece.col = col;
             piece.row = row;
-            renderBoard();
+            element.style.left = `${piece.col * GRID_SIZE}px`;
+            element.style.top = `${piece.row * GRID_SIZE}px`;
         }
     }
 
@@ -291,6 +292,7 @@ function startEditorDrag(e, piece, element) {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
         }
+        renderBoard();
     }
 
     if (isTouch) {
@@ -336,7 +338,8 @@ function startGameDrag(e, piece, element) {
         if (canPlaceAt(gamePieces, row, col, piece.width, piece.height, piece.id)) {
             piece.col = col;
             piece.row = row;
-            renderBoard();
+            element.style.left = `${piece.col * GRID_SIZE}px`;
+            element.style.top = `${piece.row * GRID_SIZE}px`;
         }
     }
 
