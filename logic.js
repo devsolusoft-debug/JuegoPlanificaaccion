@@ -105,7 +105,7 @@ function setupEventListeners() {
         const col = Math.floor((e.clientX - rect.left) / GRID_SIZE);
         const row = Math.floor((e.clientY - rect.top) / GRID_SIZE);
 
-        if (isWithinBoard(row, col) && canPlaceAt(boardPieces, row, col, piece.width, piece.height)) {
+        if (isWithinBoard(row, col) && canPlaceAt(boardPieces, row, col, piece.width, piece.height, null, false)) {
             addPiece(piece.name, piece.width, piece.height, piece.color, row, col);
         }
     });
@@ -130,7 +130,7 @@ function addPieceFromPalette(name, width, height, color) {
     const centerRow = Math.floor((BOARD_ROWS - height) / 2);
     const centerCol = Math.floor((BOARD_COLS - width) / 2);
 
-    if (!canPlaceAt(boardPieces, centerRow, centerCol, width, height)) {
+    if (!canPlaceAt(boardPieces, centerRow, centerCol, width, height, null, false)) {
         return;
     }
 
@@ -226,7 +226,7 @@ function startEditorDrag(e, piece) {
         col = Math.max(0, Math.min(BOARD_COLS - piece.width, col));
         row = Math.max(0, Math.min(BOARD_ROWS - piece.height, row));
 
-        if (canPlaceAt(boardPieces, row, col, piece.width, piece.height, piece.id)) {
+        if (canPlaceAt(boardPieces, row, col, piece.width, piece.height, piece.id, false)) {
             piece.col = col;
             piece.row = row;
             renderBoard();
@@ -324,7 +324,7 @@ function rotatePiece() {
     const rotatedWidth = piece.height;
     const rotatedHeight = piece.width;
 
-    if (!canPlaceAt(boardPieces, piece.row, piece.col, rotatedWidth, rotatedHeight, piece.id)) return;
+    if (!canPlaceAt(boardPieces, piece.row, piece.col, rotatedWidth, rotatedHeight, piece.id, false)) return;
 
     piece.width = rotatedWidth;
     piece.height = rotatedHeight;
@@ -423,8 +423,10 @@ function didPieceReachGoal(piece) {
     );
 }
 
-function canPlaceAt(pieces, row, col, width, height, ignoreId = null) {
+function canPlaceAt(pieces, row, col, width, height, ignoreId = null, checkCollision = true) {
     if (col < 0 || row < 0 || col + width > BOARD_COLS || row + height > BOARD_ROWS) return false;
+
+    if (!checkCollision) return true;
 
     return !pieces.some(p => p.id !== ignoreId && !(
         col + width <= p.col ||
