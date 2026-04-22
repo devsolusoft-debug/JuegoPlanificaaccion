@@ -114,8 +114,10 @@ function setupEventListeners() {
         if (!isSettingGoal || isPlaying || e.target !== gameBoard) return;
 
         const rect = gameBoard.getBoundingClientRect();
-        const col = Math.floor((e.clientX - rect.left) / GRID_SIZE);
-        const row = Math.floor((e.clientY - rect.top) / GRID_SIZE);
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const col = Math.floor(x / GRID_SIZE);
+        const row = Math.floor(y / GRID_SIZE);
 
         if (isWithinBoard(row, col)) {
             const allowedSides = getAllowedGoalSides(row, col);
@@ -124,8 +126,7 @@ function setupEventListeners() {
                 return;
             }
 
-            const side = chooseGoalSide(allowedSides);
-            if (!side) return;
+            const side = getClosestAllowedSide(row, col, x, y, allowedSides);
 
             setGoal(row, col, side);
             isSettingGoal = false;
@@ -496,20 +497,29 @@ function getAllowedGoalSides(row, col) {
     return sides;
 }
 
-function chooseGoalSide(allowedSides) {
+function getClosestAllowedSide(row, col, x, y, allowedSides) {
     if (allowedSides.length === 1) return allowedSides[0];
 
-    const options = allowedSides.map((side, index) => `${index + 1}: ${translateSide(side)}`).join(', ');
-    const answer = prompt(`Esta casilla es esquina. Elige el lado de la meta (${options})`);
-    if (!answer) return null;
+    const localX = x - col * GRID_SIZE;
+    const localY = y - row * GRID_SIZE;
+    const distances = {
+        left: localX,
+        right: GRID_SIZE - localX,
+        top: localY,
+        bottom: GRID_SIZE - localY,
+    };
 
-    const numeric = Number(answer.trim());
-    if (!Number.isInteger(numeric) || numeric < 1 || numeric > allowedSides.length) {
-        alert('Opción inválida. Vuelve a intentar.');
-        return null;
-    }
+    let closestSide = allowedSides[0];
+    let minDistance = distances[closestSide];
 
-    return allowedSides[numeric - 1];
+    allowedSides.forEach(side => {
+        if (distances[side] < minDistance) {
+            minDistance = distances[side];
+            closestSide = side;
+        }
+    });
+
+    return closestSide;
 }
 
 function translateSide(side) {
