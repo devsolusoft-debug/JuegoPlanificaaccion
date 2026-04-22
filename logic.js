@@ -32,8 +32,6 @@ let isPlaying = false;
 let gamePieces = [];
 let gameMoveCount = 0;
 let gameCompleted = false;
-let dragSessionActive = false;
-let lastTouchStartAt = 0;
 
 const appContainer = document.getElementById('appContainer');
 const gameBoard = document.getElementById('gameBoard');
@@ -216,23 +214,16 @@ function renderBoard() {
         pieceDiv.innerHTML = `<span class="piece-letter-circle" style="color: ${piece.color};">${piece.name}</span>`;
 
         const onPiecePointerDown = e => {
-            if (dragSessionActive) return;
-            if (e.type === 'mousedown' && Date.now() - lastTouchStartAt < 700) return;
-            if (e.type === 'touchstart' || (e.type === 'pointerdown' && e.pointerType === 'touch')) {
-                lastTouchStartAt = Date.now();
-            }
-
             if (isSettingGoal) return;
             if (isPlaying) {
-                startGameDrag(e, piece);
+                startGameDrag(e, piece, pieceDiv);
                 return;
             }
             selectedPieceId = piece.id;
             updateUI();
-            startEditorDrag(e, piece);
+            startEditorDrag(e, piece, pieceDiv);
         };
 
-        pieceDiv.addEventListener('pointerdown', onPiecePointerDown);
         pieceDiv.addEventListener('mousedown', onPiecePointerDown);
         pieceDiv.addEventListener('touchstart', onPiecePointerDown, { passive: false });
 
@@ -251,30 +242,38 @@ function selectPiece(id) {
     updateUI();
 }
 
-function startEditorDrag(e, piece) {
+function startEditorDrag(e, piece, element) {
     if (isPlaying) return;
     e.preventDefault();
-    dragSessionActive = true;
-
+    const isTouch = e.type === 'touchstart';
     const startPoint = getClientPoint(e);
     const startX = startPoint.x;
     const startY = startPoint.y;
-    const startCol = piece.col;
-    const startRow = piece.row;
-    const isPointer = e.type === 'pointerdown';
-    const isTouch = e.type === 'touchstart';
+    const elementRect = element.getBoundingClientRect();
+    const shiftX = startX - elementRect.left;
+    const shiftY = startY - elementRect.top;
+    const pieceWidthPx = piece.width * GRID_SIZE;
+    const pieceHeightPx = piece.height * GRID_SIZE;
 
     function onMouseMove(moveEvent) {
-        if (isTouch || isPointer) moveEvent.preventDefault();
+        if (isTouch) moveEvent.preventDefault();
         const movePoint = getClientPoint(moveEvent);
-        const deltaX = movePoint.x - startX;
-        const deltaY = movePoint.y - startY;
+        const boardRect = gameBoard.getBoundingClientRect();
 
-        let col = Math.round((startCol * GRID_SIZE + deltaX) / GRID_SIZE);
-        let row = Math.round((startRow * GRID_SIZE + deltaY) / GRID_SIZE);
+        let newLeft = Math.min(
+            Math.max(movePoint.x - shiftX, boardRect.left),
+            boardRect.right - pieceWidthPx
+        );
+        let newTop = Math.min(
+            Math.max(movePoint.y - shiftY, boardRect.top),
+            boardRect.bottom - pieceHeightPx
+        );
 
-        col = Math.max(0, Math.min(BOARD_COLS - piece.width, col));
-        row = Math.max(0, Math.min(BOARD_ROWS - piece.height, row));
+        newLeft = Math.round((newLeft - boardRect.left) / GRID_SIZE) * GRID_SIZE;
+        newTop = Math.round((newTop - boardRect.top) / GRID_SIZE) * GRID_SIZE;
+
+        const col = Math.max(0, Math.min(BOARD_COLS - piece.width, Math.round(newLeft / GRID_SIZE)));
+        const row = Math.max(0, Math.min(BOARD_ROWS - piece.height, Math.round(newTop / GRID_SIZE)));
 
         if (canPlaceAt(boardPieces, row, col, piece.width, piece.height, piece.id, false)) {
             piece.col = col;
@@ -284,15 +283,10 @@ function startEditorDrag(e, piece) {
     }
 
     function onMouseUp() {
-        dragSessionActive = false;
         if (isTouch) {
             document.removeEventListener('touchmove', onMouseMove);
             document.removeEventListener('touchend', onMouseUp);
             document.removeEventListener('touchcancel', onMouseUp);
-        } else if (isPointer) {
-            document.removeEventListener('pointermove', onMouseMove);
-            document.removeEventListener('pointerup', onMouseUp);
-            document.removeEventListener('pointercancel', onMouseUp);
         } else {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
@@ -303,35 +297,28 @@ function startEditorDrag(e, piece) {
         document.addEventListener('touchmove', onMouseMove, { passive: false });
         document.addEventListener('touchend', onMouseUp);
         document.addEventListener('touchcancel', onMouseUp);
-    } else if (isPointer) {
-        document.addEventListener('pointermove', onMouseMove);
-        document.addEventListener('pointerup', onMouseUp);
-        document.addEventListener('pointercancel', onMouseUp);
     } else {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     }
 }
 
-function startGameDrag(e, piece) {
+function startGameDrag(e, piece, element) {
     if (gameCompleted) return;
     e.preventDefault();
-    dragSessionActive = true;
-
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
     const startPoint = getClientPoint(e);
-    const initialCol = piece.col;
-    const initialRow = piece.row;
     const isHorizontal = piece.width > piece.height;
     const isVertical = piece.height > piece.width;
-    const isPointer = e.type === 'pointerdown';
     const isTouch = e.type === 'touchstart';
+    const initialCol = piece.col;
+    const initialRow = piece.row;
 
     const offsetX = startPoint.x - rect.left;
     const offsetY = startPoint.y - rect.top;
 
     function onMouseMove(moveEvent) {
-        if (isTouch || isPointer) moveEvent.preventDefault();
+        if (isTouch) moveEvent.preventDefault();
         const movePoint = getClientPoint(moveEvent);
         const boardRect = gameBoard.getBoundingClientRect();
         const x = movePoint.x - boardRect.left - offsetX;
@@ -354,15 +341,10 @@ function startGameDrag(e, piece) {
     }
 
     function onMouseUp() {
-        dragSessionActive = false;
         if (isTouch) {
             document.removeEventListener('touchmove', onMouseMove);
             document.removeEventListener('touchend', onMouseUp);
             document.removeEventListener('touchcancel', onMouseUp);
-        } else if (isPointer) {
-            document.removeEventListener('pointermove', onMouseMove);
-            document.removeEventListener('pointerup', onMouseUp);
-            document.removeEventListener('pointercancel', onMouseUp);
         } else {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
@@ -387,10 +369,6 @@ function startGameDrag(e, piece) {
         document.addEventListener('touchmove', onMouseMove, { passive: false });
         document.addEventListener('touchend', onMouseUp);
         document.addEventListener('touchcancel', onMouseUp);
-    } else if (isPointer) {
-        document.addEventListener('pointermove', onMouseMove);
-        document.addEventListener('pointerup', onMouseUp);
-        document.addEventListener('pointercancel', onMouseUp);
     } else {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
