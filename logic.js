@@ -118,7 +118,16 @@ function setupEventListeners() {
         const row = Math.floor((e.clientY - rect.top) / GRID_SIZE);
 
         if (isWithinBoard(row, col)) {
-            setGoal(row, col);
+            const allowedSides = getAllowedGoalSides(row, col);
+            if (!allowedSides.length) {
+                alert('La meta solo se puede ubicar en casillas de la orilla.');
+                return;
+            }
+
+            const side = chooseGoalSide(allowedSides);
+            if (!side) return;
+
+            setGoal(row, col, side);
             isSettingGoal = false;
             goalBtn.classList.remove('active');
         }
@@ -161,8 +170,29 @@ function renderBoard() {
     if (goalPosition) {
         const goalDiv = document.createElement('div');
         goalDiv.className = 'goal-indicator';
-        goalDiv.style.left = `${goalPosition.col * GRID_SIZE}px`;
-        goalDiv.style.top = `${goalPosition.row * GRID_SIZE}px`;
+        const { row, col, side } = goalPosition;
+
+        if (side === 'left') {
+            goalDiv.style.left = `${col * GRID_SIZE}px`;
+            goalDiv.style.top = `${row * GRID_SIZE}px`;
+            goalDiv.style.width = '10px';
+            goalDiv.style.height = `${GRID_SIZE}px`;
+        } else if (side === 'right') {
+            goalDiv.style.left = `${col * GRID_SIZE + GRID_SIZE - 10}px`;
+            goalDiv.style.top = `${row * GRID_SIZE}px`;
+            goalDiv.style.width = '10px';
+            goalDiv.style.height = `${GRID_SIZE}px`;
+        } else if (side === 'top') {
+            goalDiv.style.left = `${col * GRID_SIZE}px`;
+            goalDiv.style.top = `${row * GRID_SIZE}px`;
+            goalDiv.style.width = `${GRID_SIZE}px`;
+            goalDiv.style.height = '10px';
+        } else if (side === 'bottom') {
+            goalDiv.style.left = `${col * GRID_SIZE}px`;
+            goalDiv.style.top = `${row * GRID_SIZE + GRID_SIZE - 10}px`;
+            goalDiv.style.width = `${GRID_SIZE}px`;
+            goalDiv.style.height = '10px';
+        }
         gameBoard.appendChild(goalDiv);
     }
 
@@ -310,8 +340,8 @@ function toggleGoalMode() {
     }
 }
 
-function setGoal(row, col) {
-    goalPosition = { row, col };
+function setGoal(row, col, side) {
+    goalPosition = { row, col, side };
     updateUI();
     renderBoard();
 }
@@ -406,7 +436,7 @@ function updateUI() {
     document.getElementById('selectedPieceCard').style.display = selectedPiece && !isPlaying ? 'block' : 'none';
 
     if (goalPosition) {
-        goalInfo.textContent = `Meta: (${goalPosition.row}, ${goalPosition.col})`;
+        goalInfo.textContent = `Meta: (${goalPosition.row}, ${goalPosition.col}) lado ${translateSide(goalPosition.side)}`;
         goalInfo.style.display = 'block';
     } else {
         goalInfo.style.display = 'none';
@@ -415,12 +445,29 @@ function updateUI() {
 
 function didPieceReachGoal(piece) {
     if (!goalPosition) return false;
-    return !(
+    const overlapsGoalCell = !(
         piece.col + piece.width <= goalPosition.col ||
         piece.col >= goalPosition.col + 1 ||
         piece.row + piece.height <= goalPosition.row ||
         piece.row >= goalPosition.row + 1
     );
+
+    if (!overlapsGoalCell) return false;
+
+    if (goalPosition.side === 'left') {
+        return piece.col === goalPosition.col;
+    }
+    if (goalPosition.side === 'right') {
+        return piece.col + piece.width === goalPosition.col + 1;
+    }
+    if (goalPosition.side === 'top') {
+        return piece.row === goalPosition.row;
+    }
+    if (goalPosition.side === 'bottom') {
+        return piece.row + piece.height === goalPosition.row + 1;
+    }
+
+    return false;
 }
 
 function canPlaceAt(pieces, row, col, width, height, ignoreId = null, checkCollision = true) {
@@ -438,4 +485,37 @@ function canPlaceAt(pieces, row, col, width, height, ignoreId = null, checkColli
 
 function isWithinBoard(row, col) {
     return col >= 0 && col < BOARD_COLS && row >= 0 && row < BOARD_ROWS;
+}
+
+function getAllowedGoalSides(row, col) {
+    const sides = [];
+    if (row === 0) sides.push('top');
+    if (row === BOARD_ROWS - 1) sides.push('bottom');
+    if (col === 0) sides.push('left');
+    if (col === BOARD_COLS - 1) sides.push('right');
+    return sides;
+}
+
+function chooseGoalSide(allowedSides) {
+    if (allowedSides.length === 1) return allowedSides[0];
+
+    const options = allowedSides.map((side, index) => `${index + 1}: ${translateSide(side)}`).join(', ');
+    const answer = prompt(`Esta casilla es esquina. Elige el lado de la meta (${options})`);
+    if (!answer) return null;
+
+    const numeric = Number(answer.trim());
+    if (!Number.isInteger(numeric) || numeric < 1 || numeric > allowedSides.length) {
+        alert('Opción inválida. Vuelve a intentar.');
+        return null;
+    }
+
+    return allowedSides[numeric - 1];
+}
+
+function translateSide(side) {
+    if (side === 'left') return 'izquierda';
+    if (side === 'right') return 'derecha';
+    if (side === 'top') return 'arriba';
+    if (side === 'bottom') return 'abajo';
+    return side;
 }
