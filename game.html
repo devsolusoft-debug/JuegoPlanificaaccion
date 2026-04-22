@@ -3,48 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor + Juego de Fichas</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Editor de Niveles de Puzzle</title>
+        <link rel="stylesheet" href="styles.css">
+
 </head>
 <body>
-    <div id="modal" class="modal" aria-hidden="true">
-        <div class="modal-content">
-            <p id="modal-message"></p>
-            <button id="retry-button">Seguir editando</button>
+    <div class="container">
+
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Left Sidebar - Piece Palette -->
+            <aside class="sidebar left-sidebar">
+                <!-- Instructions -->
+                <div class="card instructions-card">
+                    <h3>Instrucciones</h3>
+                    <ul>
+                        <li>• Selecciona las fichas desde la 'Fichas Disponibles'</li>
+                        <li>• Ordena las fichas según el desafío</li>
+                        <li>• Establece una meta en el tablero</li>
+                        <li>• Haz clic en "▶️ Comenzar Juego"</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Desafío</h3>
+                    <p><br><br><br><br><br><br><br><br><br><br><br></p>
+                </div>
+            </aside>
+
+            
+
+            <!-- Center - Game Board -->
+            <main class="board-section">
+                <div class="card">
+                    <h3>Tablero de Juego</h3>
+                    <div class="board-controls">
+                        <button id="goalBtn" class="btn btn-secondary">Establecer Meta</button>
+                        <div id="goalInfo" class="goal-info" style="display: none;"></div>
+                    </div>
+                    <div class="game-board" id="gameBoard"></div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar - Controls & Info -->
+            <aside class="sidebar right-sidebar">
+                <!-- Seleccion de fichas -->
+                <div class="card">
+                    <h3>Fichas Disposnibles</h3>
+                    <div class="palette" id="palette"></div>
+                </div>
+                
+                <!-- Selected Piece Info -->
+                <div id="selectedPieceCard" class="card selected-piece-card" style="display: none;">
+                    <h3>Ficha Seleccionada</h3>
+                    <div class="piece-info-content">
+                        <button id="rotateBtn" class="btn btn-rotate">↻ Rotar Ficha</button>
+                        <button id="deleteBtn" class="btn btn-danger">🗑 Eliminar</button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <button id="previewBtn" class="btn btn-success" disabled>▶️ Comenzar Juego</button>
+                    <button id="clearBtn" class="btn btn-outline">🗑 Limpiar Tablero</button>
+                </div>
+            </aside>
         </div>
     </div>
 
-    <h1>Editor de tablero 6x6</h1>
-    <div id="move-counter">Movimientos: 0</div>
-
-    <div id="app-layout">
-        <aside id="editor-panel">
-            <h2>Fichas disponibles</h2>
-            <p class="hint">Haz clic para agregar una ficha al tablero.</p>
-            <div id="palette"></div>
-
-            <h3>Meta de salida (roja)</h3>
-            <label for="goal-row">Fila de salida:</label>
-            <select id="goal-row"></select>
-
-            <h3>Acciones de ficha seleccionada</h3>
-            <div id="piece-actions">
-                <button id="rotate-piece">Rotar (Horizontal/Vertical)</button>
-                <button id="remove-piece">Quitar ficha</button>
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal" style="display: none;">
+        <div class="modal-content preview-modal-content">
+            <div class="modal-body">
+                <div class="preview-stats">
+                    <div class="stat">Movimientos: <span id="previewMoveCount">0</span></div>
+                    <div class="stat" id="winMessage" style="display: none; color: #22c55e;">¡Ganaste! 🎉</div>
+                </div>
+                <div class="game-board preview-board" id="previewBoard"></div>
             </div>
-
-            <button id="reset-board" class="secondary">Vaciar tablero</button>
-        </aside>
-
-        <main>
-            <div id="game-board" aria-label="Tablero de juego 6 por 6"></div>
-            <section id="piece-info">
-                <h3>Posiciones actuales</h3>
-                <div id="positions"></div>
-            </section>
-        </main>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="resetPreview()">Reiniciar</button>
+                <button class="btn btn-primary" onclick="closePreviewModal()">Cerrar</button>
+            </div>
+        </div>
     </div>
 
-    <script src="script.js"></script>
+        <script src="logic.js"></script>
 </body>
 </html>
