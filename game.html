@@ -3,45 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Figuras Geométricas</title>
+    <title>Editor de Niveles de Puzzle</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <p id="modal-message"></p>
-            <button id="retry-button">Reintentar</button>
+    <div class="container" id="appContainer">
+        <div class="main-grid">
+            <aside class="sidebar left-sidebar">
+                <div class="card instructions-card">
+                    <h3>Instrucciones</h3>
+                    <ul>
+                        <li>• Selecciona las fichas desde la 'Fichas Disponibles'</li>
+                        <li>• Ordena las fichas según el desafío</li>
+                        <li>• Establece una meta en el tablero</li>
+                        <li>• Haz clic en "▶️ Comenzar Juego"</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Desafío</h3>
+                    <p><br><br><br><br><br><br><br><br><br><br><br></p>
+                </div>
+            </aside>
+
+            <main class="board-section">
+                <div class="card">
+                    <h3>Tablero de Juego</h3>
+                    <div class="board-controls">
+                        <button id="goalBtn" class="btn btn-secondary">Establecer Meta</button>
+                        <div id="goalInfo" class="goal-info" style="display: none;"></div>
+                    </div>
+                    <div class="game-board" id="gameBoard"></div>
+
+                    <div id="playControls" class="play-controls" style="display: none;">
+                        <div class="preview-stats">
+                            <div class="stat">Movimientos: <span id="liveMoveCount">0</span></div>
+                            <div class="stat" id="liveWinMessage" style="display: none; color: #22c55e;">¡Ganaste! 🎉</div>
+                        </div>
+                        <div class="modal-footer play-footer">
+                            <button id="restartBtn" class="btn btn-outline">Reiniciar</button>
+                            <button id="closeGameBtn" class="btn btn-primary">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <aside class="sidebar right-sidebar">
+                <div class="card">
+                    <h3>Fichas Disposnibles</h3>
+                    <div class="palette" id="palette"></div>
+                </div>
+
+                <div id="selectedPieceCard" class="card selected-piece-card" style="display: none;">
+                    <h3>Ficha Seleccionada</h3>
+                    <div class="piece-info-content">
+                        <button id="rotateBtn" class="btn btn-rotate">↻ Rotar Ficha</button>
+                        <button id="deleteBtn" class="btn btn-danger">🗑 Eliminar</button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="previewBtn" class="btn btn-success" disabled>▶️ Comenzar Juego</button>
+                    <button id="clearBtn" class="btn btn-outline">🗑 Limpiar Tablero</button>
+                </div>
+            </aside>
         </div>
     </div>
 
-    <!-- Contador de movimientos -->
-    <div id="move-counter">Movimientos realizados</div>
-
-    <!-- Contenedor para el área de juego y la información -->
-    <div id="game-container">
-        <!-- Área de juego -->
-        <div id="game-board">
-            <div id="piece-3" class="draggable horizontal">A</div>
-            <div id="piece-4" class="draggable horizontal">N</div>
-            <div id="piece-5" class="draggable horizontal">J</div>
-            <div id="piece-6" class="draggable vertical">L</div>
-            <div id="piece-7" class="draggable vertical">D</div>
-            <div id="piece-8" class="draggable horizontal">H</div>
-            <div id="piece-9" class="draggable vertical">M</div>
-            <div id="piece-10" class="draggable horizontal">B</div>
-            <div id="piece-11" class="draggable vertical">E</div>
-            <div id="piece-12" class="draggable vertical">O</div>
-            <div id="piece-13" class="draggable horizontal">I</div>
-            <div id="piece-14" class="draggable horizontal">Q</div>
-        </div>
-
-        <!-- Información de las fichas -->
-        <div id="piece-info">
-            <h3>Posiciones actuales de las fichas</h3>
-            <div id="positions"></div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+    <script src="logic.js"></script>
 </body>
 </html>
